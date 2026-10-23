@@ -10,6 +10,6 @@
   "local_env": "LATTICE_TORCH_ROOT",
   "version_query": "libtorch-cpu-latest",
   "pin": "2.13.0",
-  "url": "",
-  "sha256": ""
+  "url": "https://github.com/YuanBaoSMadLab/scourge-packages/releases/download/v0.1.0/lattice.dll",
+  "sha256": "00a8c243db52b46e36ade10c1b32f60983d8cfd99aa6c164b69a34fc5c7d7e31"
 }
