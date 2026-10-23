@@ -1,0 +1,10 @@
+# 预编译产物不入库：走 GitHub Release 资产（pkg.json 的 url + sha256 指向）
+bin/
+*.dll
+*.exe
+*.lib
+*.obj
+
+# 本地安装/验证残留
+packages/*/_dl/
+sget.lock.json

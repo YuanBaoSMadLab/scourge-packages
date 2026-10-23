@@ -1,0 +1,15 @@
+{
+  "name": "lattice",
+  "desc": "PyTorch (LibTorch) FFI 桥：张量算子/自动求导/SGD-Adam 优化器/TorchScript 推理，纯 C++ 无 Python",
+  "author": "YuanBaoSMadLab",
+  "repo": "https://github.com/YuanBaoSMadLab/scourge-packages",
+  "license": "MIT",
+  "version": "0.1.0",
+  "binding": "ecosystem",
+  "deps": [],
+  "local_env": "LATTICE_TORCH_ROOT",
+  "version_query": "libtorch-cpu-latest",
+  "pin": "2.13.0",
+  "url": "",
+  "sha256": ""
+}

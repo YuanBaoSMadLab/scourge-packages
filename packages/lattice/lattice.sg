@@ -1,0 +1,204 @@
+# ============================================================================
+#  lattice - PyTorch (LibTorch) FFI 桥（纯 C++，无 Python 依赖）
+# ----------------------------------------------------------------------------
+#  绑定契约单一事实源在 packages/lattice/shim/lattice_shim.hpp（句柄/shape/
+#  dtype/错误态协议均以该头为准）。本文件只做声明转发 + 最小封装：
+#  Scourge 侧惯用短名（zeros/randn/matmul...）经 symbol= 别名到 C 符号
+#  lattice_*。双模约束：VM 与 AOT 均为运行期动态解析，无需链接期配置；
+#  运行需保证 lattice.dll 与 torch 的 lib 目录在 PATH（torch pin 版本必须
+#  与编译期一致，错配由 init() 版本守卫拦截）。
+#  capability：ffi（仅此一项；包内无其他能力面）。
+# ============================================================================
+capability ffi
+
+# ---- core：生命周期与版本（9） ---------------------------------------------
+
+@extern("lattice.dll", symbol="lattice_version")
+def version() -> str:
+    pass
+@extern("lattice.dll", symbol="lattice_version_int")
+def version_int() -> int:
+    pass
+@extern("lattice.dll", symbol="lattice_init")
+def init() -> int:
+    pass
+@extern("lattice.dll", symbol="lattice_last_err")
+def last_err() -> str:
+    pass
+@extern("lattice.dll", symbol="lattice_clear_err")
+def clear_err() -> None:
+    pass
+@extern("lattice.dll", symbol="lattice_free")
+def free(h: int) -> int:
+    pass
+@extern("lattice.dll", symbol="lattice_handle_alive")
+def handle_alive(h: int) -> int:
+    pass
+@extern("lattice.dll", symbol="lattice_free_all")
+def free_all() -> int:
+    pass
+@extern("lattice.dll", symbol="lattice_build_info")
+def build_info() -> str:
+    pass
+
+# ---- tensor：创建/元信息/零拷贝/算术/规约/变形/激活（28） -------------------
+
+@extern("lattice.dll", symbol="lattice_zeros")
+def zeros(shape: str, dtype: str) -> int:
+    pass
+@extern("lattice.dll", symbol="lattice_ones")
+def ones(shape: str, dtype: str) -> int:
+    pass
+@extern("lattice.dll", symbol="lattice_randn")
+def randn(shape: str, seed: int) -> int:
+    pass
+@extern("lattice.dll", symbol="lattice_scalar_f")
+def scalar_f(v: float) -> int:
+    pass
+@extern("lattice.dll", symbol="lattice_scalar_i")
+def scalar_i(v: int) -> int:
+    pass
+@extern("lattice.dll", symbol="lattice_from_data")
+def from_data(ptr: int, shape: str, dtype: str) -> int:
+    pass
+@extern("lattice.dll", symbol="lattice_shape")
+def shape(h: int) -> str:
+    pass
+@extern("lattice.dll", symbol="lattice_dtype")
+def dtype(h: int) -> str:
+    pass
+@extern("lattice.dll", symbol="lattice_numel")
+def numel(h: int) -> int:
+    pass
+@extern("lattice.dll", symbol="lattice_data_ptr")
+def data_ptr_t(h: int) -> int:
+    pass
+@extern("lattice.dll", symbol="lattice_copy_to_ptr")
+def copy_to_ptr(dst: int, h: int) -> int:
+    pass
+@extern("lattice.dll", symbol="lattice_get_f")
+def get_f(h: int, i: int) -> float:
+    pass
+@extern("lattice.dll", symbol="lattice_get_i")
+def get_i(h: int, i: int) -> int:
+    pass
+@extern("lattice.dll", symbol="lattice_add")
+def add(a: int, b: int) -> int:
+    pass
+@extern("lattice.dll", symbol="lattice_sub")
+def sub(a: int, b: int) -> int:
+    pass
+@extern("lattice.dll", symbol="lattice_mul")
+def mul(a: int, b: int) -> int:
+    pass
+@extern("lattice.dll", symbol="lattice_div")
+def div(a: int, b: int) -> int:
+    pass
+@extern("lattice.dll", symbol="lattice_matmul")
+def matmul(a: int, b: int) -> int:
+    pass
+@extern("lattice.dll", symbol="lattice_pow")
+def pow(a: int, b: int) -> int:
+    pass
+# t_ 前缀：与内建同名者（sum/mean/max/reshape/tanh）改 t_xxx 规避 E2007
+@extern("lattice.dll", symbol="lattice_sum")
+def t_sum(h: int) -> float:
+    pass
+@extern("lattice.dll", symbol="lattice_mean")
+def t_mean(h: int) -> float:
+    pass
+# 张量均值（0-dim 句柄）：损失须在计算图内才能 backward，double 版接不了图
+@extern("lattice.dll", symbol="lattice_mean_tensor")
+def t_mean_t(h: int) -> int:
+    pass
+@extern("lattice.dll", symbol="lattice_max")
+def t_max(h: int) -> float:
+    pass
+@extern("lattice.dll", symbol="lattice_reshape")
+def t_reshape(h: int, shape: str) -> int:
+    pass
+@extern("lattice.dll", symbol="lattice_transpose2")
+def transpose2(h: int) -> int:
+    pass
+@extern("lattice.dll", symbol="lattice_relu")
+def relu(h: int) -> int:
+    pass
+@extern("lattice.dll", symbol="lattice_tanh")
+def t_tanh(h: int) -> int:
+    pass
+@extern("lattice.dll", symbol="lattice_sigmoid")
+def sigmoid(h: int) -> int:
+    pass
+@extern("lattice.dll", symbol="lattice_softmax")
+def softmax(h: int, dim: int) -> int:
+    pass
+
+# ---- train：autograd/优化器/JIT/序列化（15） -------------------------------
+
+@extern("lattice.dll", symbol="lattice_requires_grad")
+def requires_grad(h: int, flag: int) -> int:
+    pass
+@extern("lattice.dll", symbol="lattice_backward")
+def backward(h: int) -> int:
+    pass
+@extern("lattice.dll", symbol="lattice_grad")
+def grad(h: int) -> int:
+    pass
+@extern("lattice.dll", symbol="lattice_param_group_new")
+def param_group_new() -> int:
+    pass
+@extern("lattice.dll", symbol="lattice_param_group_add")
+def param_group_add(pg: int, h: int) -> int:
+    pass
+@extern("lattice.dll", symbol="lattice_sgd_new")
+def sgd_new(pg: int, lr: float) -> int:
+    pass
+@extern("lattice.dll", symbol="lattice_adam_new")
+def adam_new(pg: int, lr: float) -> int:
+    pass
+@extern("lattice.dll", symbol="lattice_opt_zero_grad")
+def opt_zero_grad(opt: int) -> int:
+    pass
+@extern("lattice.dll", symbol="lattice_opt_step")
+def opt_step(opt: int) -> int:
+    pass
+@extern("lattice.dll", symbol="lattice_jit_compile")
+def jit_compile(src: str) -> int:
+    pass
+@extern("lattice.dll", symbol="lattice_jit_run")
+def jit_run(cu: int, method: str, x: int) -> int:
+    pass
+@extern("lattice.dll", symbol="lattice_jit_load")
+def jit_load(path: str) -> int:
+    pass
+@extern("lattice.dll", symbol="lattice_jit_forward")
+def jit_forward(m: int, x: int) -> int:
+    pass
+@extern("lattice.dll", symbol="lattice_save")
+def save(h: int, path: str) -> int:
+    pass
+@extern("lattice.dll", symbol="lattice_load")
+def load(path: str) -> int:
+    pass
+
+# ============================================================================
+#  封装层（薄壳，非平行实现：只组合上方导出）
+# ============================================================================
+
+# 编译期锁定 torch 版本（如 "2.13.0"）——运行期 torch.dll 版本必须一致
+def PIN() -> str:
+    return version()
+
+# 版本守卫第三层（前两层：编译期宏、DLL 内冒烟）：init 冒烟 + pin 逐字比对。
+# 醒目打印锁定版本——新版 torch 拉取后 ABI 失配在这里"挨骂"而不是静默出错。
+def init_guard(expected: str) -> int:
+    clear_err()
+    if init() != 1:
+        print("[lattice] init FAIL:", last_err())
+        return 0
+    got: str = version()
+    print("[lattice] shim OK | torch pin", got, "| expect", expected)
+    if got != expected:
+        print("[lattice] VERSION MISMATCH - 重编 shim(shim/build_shim.bat) 或改 pin")
+        return 0
+    return 1
